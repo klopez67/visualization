@@ -68,3 +68,77 @@ ggp_weather_scatterplot=
   
 ```
 
+We are getting warming message of missing values. Use filter function to check which rows where there are missing data
+
+```{r}
+weather_df |>
+  filter(is.na(tmax))
+```
+
+# Advanced scatterplot 
+
+Use color in aes to assign the variables to a color
+- alpha makes points more transparent in the geom_point changes are not specfiic to variables so it aplies to the whole plot 
+- geom_smooth creates a smooth line in the points
+
+**where you define the aesthetics matters**
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax, color= name)) + 
+  geom_point(alpha = .3, size= .8) + 
+  geom_smooth(se = FALSE)
+```
+Used aes in the scatterplot from the whole plot, so then it creates a smooth line to the whole plot 
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) +
+  geom_smooth(se = FALSE)
+```
+
+Use faceting to have 3 seperate scatter plots that are not overlaying on each other. 
+- left hand side is what variable we ave on the right hand side placing columns first 
+
+```{r}
+
+weather_df |>
+  ggplot(aes(x= tmin, y = tmax, color = name)) + 
+  geom_point (alpha = .3) + 
+  geom_smooth (se= FALSE) + 
+  facet_grid(. ~ name)
+```
+
+Plot using dates as the x-axis and y-amix to tmax to see seasonal trends in all 3 locations.
+- setting size = prcp to show if it rained more on a certain day the dots will be bigger
+
+```{r}
+
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp), alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+```
+
+Write a code chain that starts with weather_df
+
+- focuses only on Central Park (use filter()) 
+- converts temperatures to Fahrenheit (temp * (9/5)+32)
+- makes a scatterplot of min vs. max temperature
+- and overlays a linear regression line (using options in geom_smooth(method = "lm"))
+
+```{r}
+weather_df |> 
+  filter( name == "CentralPark_NY") |> 
+  mutate(
+    tmax_fahr= tmax * (9/5)+32, 
+    tmin_fahr = tmin *(9/5)+32
+  ) |>
+ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point()+ 
+  geom_smooth(method = "lm", se=FALSE) 
+  
+
+
+
+```
+

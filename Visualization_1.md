@@ -105,3 +105,142 @@ ggp_weather_scatterplot=
   ggplot(aes(x=tmin, y =tmax))+ 
   geom_point()
 ```
+
+We are getting warming message of missing values. Use filter function to
+check which rows where there are missing data
+
+``` r
+weather_df |>
+  filter(is.na(tmax))
+```
+
+    ## # A tibble: 17 × 6
+    ##    name         id          date        prcp  tmax  tmin
+    ##    <chr>        <chr>       <date>     <dbl> <dbl> <dbl>
+    ##  1 Molokai_HI   USW00022534 2022-05-31    NA    NA    NA
+    ##  2 Waterhole_WA USS0023B17S 2021-03-09    NA    NA    NA
+    ##  3 Waterhole_WA USS0023B17S 2021-12-07    51    NA    NA
+    ##  4 Waterhole_WA USS0023B17S 2021-12-31     0    NA    NA
+    ##  5 Waterhole_WA USS0023B17S 2022-02-03     0    NA    NA
+    ##  6 Waterhole_WA USS0023B17S 2022-08-09    NA    NA    NA
+    ##  7 Waterhole_WA USS0023B17S 2022-08-10    NA    NA    NA
+    ##  8 Waterhole_WA USS0023B17S 2022-08-11    NA    NA    NA
+    ##  9 Waterhole_WA USS0023B17S 2022-08-12    NA    NA    NA
+    ## 10 Waterhole_WA USS0023B17S 2022-08-13    NA    NA    NA
+    ## 11 Waterhole_WA USS0023B17S 2022-08-14    NA    NA    NA
+    ## 12 Waterhole_WA USS0023B17S 2022-08-15    NA    NA    NA
+    ## 13 Waterhole_WA USS0023B17S 2022-08-16    NA    NA    NA
+    ## 14 Waterhole_WA USS0023B17S 2022-08-17    NA    NA    NA
+    ## 15 Waterhole_WA USS0023B17S 2022-08-18    NA    NA    NA
+    ## 16 Waterhole_WA USS0023B17S 2022-08-19    NA    NA    NA
+    ## 17 Waterhole_WA USS0023B17S 2022-12-31    76    NA    NA
+
+# Advanced scatterplot
+
+Use color in aes to assign the variables to a color - alpha makes points
+more transparent in the geom_point changes are not specfiic to variables
+so it aplies to the whole plot - geom_smooth creates a smooth line in
+the points
+
+**where you define the aesthetics matters**
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax, color= name)) + 
+  geom_point(alpha = .3, size= .8) + 
+  geom_smooth(se = FALSE)
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-7-1.png)<!-- --> Used
+aes in the scatterplot from the whole plot, so then it creates a smooth
+line to the whole plot
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) +
+  geom_smooth(se = FALSE)
+```
+
+    ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Use faceting to have 3 seperate scatter plots that are not overlaying on
+each other. - left hand side is what variable we ave on the right hand
+side placing columns first
+
+``` r
+weather_df |>
+  ggplot(aes(x= tmin, y = tmax, color = name)) + 
+  geom_point (alpha = .3) + 
+  geom_smooth (se= FALSE) + 
+  facet_grid(. ~ name)
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Plot using dates as the x-axis and y-amix to tmax to see seasonal trends
+in all 3 locations. - setting size = prcp to show if it rained more on a
+certain day the dots will be bigger
+
+``` r
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp), alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 19 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+Write a code chain that starts with weather_df
+
+- focuses only on Central Park (use filter())
+- converts temperatures to Fahrenheit (temp \* (9/5)+32)
+- makes a scatterplot of min vs. max temperature
+- and overlays a linear regression line (using options in
+  geom_smooth(method = “lm”))
+
+``` r
+weather_df |> 
+  filter( name == "CentralPark_NY") |> 
+  mutate(
+    tmax_fahr= tmax * (9/5)+32, 
+    tmin_fahr = tmin *(9/5)+32
+  ) |>
+ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point()+ 
+  geom_smooth(method = "lm", se=FALSE) 
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
