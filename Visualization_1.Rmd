@@ -1,0 +1,11 @@
+---
+title: "Visualization_1"
+author: "Kimberly Lopez"
+date: "2024-09-26"
+output: github_document
+---
+```{r}
+library(tidyverse)
+
+```
+
