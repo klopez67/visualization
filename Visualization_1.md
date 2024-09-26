@@ -18,6 +18,10 @@ library(tidyverse)
     ## ✖ dplyr::lag()    masks stats::lag()
     ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
+``` r
+library(ggridges)
+```
+
 Importing weather data.
 
 - data is publicly avaialble
@@ -244,3 +248,172 @@ ggplot(aes(x = tmin, y = tmax)) +
     ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](Visualization_1_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+Using geom_hex shows highest peaks of the data and data density.
+
+- setting the real color of the plot in geom_point() since there is not
+  a color vairable in the data soo it cant go in the ggplot aes() row
+
+``` r
+weather_df |>
+  ggplot(aes(x=tmin, y = tmax))+ 
+  geom_hex()
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_binhex()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+Using geom_hex shows highest peaks of the data and data density.
+
+- setting the real color of the plot in geom_point() since there is not
+  a color vairable in the data soo it cant go in the ggplot aes() row
+
+``` r
+weather_df |>
+  ggplot(aes(x=tmin, y = tmax))+ 
+  geom_hex()
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_binhex()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+# Univariable Plots (1 variable)
+
+Use geom_histogram() to make a histogram of only variable tmax
+
+``` r
+ggplot(weather_df, aes(x = tmax)) + 
+  geom_histogram()
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_bin()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+Comparison of indiviaul places from the weather data next of each other.
+
+``` r
+ggplot(weather_df, aes(x = tmax, fill = name)) + 
+  geom_histogram(position = "dodge", binwidth = 2)
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_bin()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+To fix this. Use facet_grid() function seperated by name of location.
+
+``` r
+weather_df |> 
+  ggplot(aes(x=tmin, fill = name)) + 
+  geom_histogram() + 
+  facet_grid(.~name)
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_bin()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+Instead we can also use a density plot like “smooth histogram: - this is
+the one professor would go for if comparing across locations
+
+``` r
+weather_df |> 
+  ggplot(aes(x = tmin, fill = name)) + 
+  geom_density (alpha = .3)
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_density()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+We can also do boxplots
+
+``` r
+weather_df |>
+  ggplot(aes(x=name, y = tmin, fill=name)) + 
+  geom_boxplot()
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_boxplot()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+
+Violin Plot:
+
+- used for vertical display of densities
+- **professor prefers violin plots compared to boxplots when the data is
+  multimodal(shows up as more bumpy) or skewed**
+- looking at distribution across tmin
+
+``` r
+weather_df |> 
+  ggplot(aes(x=name, y = tmin, fill=name))+ 
+  geom_violin()
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_ydensity()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+Ridge Plots
+
+- used for separating each densities and separated vertically
+- looks similar to density plot, separating each variable on the y axis
+- must install ggridges
+
+``` r
+weather_df |> 
+  ggplot( aes(x = tmax, y = name)) + 
+  geom_density_ridges()
+```
+
+    ## Picking joint bandwidth of 1.54
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_density_ridges()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+
+Make plots that compare precipitation across locations. Try a histogram,
+a density plot, a boxplot, a violin plot, and a ridgeplot; use aesthetic
+mappings to make your figure readable
+
+- boxplot is the best since it shows the outliers the best
+
+``` r
+weather_df |> 
+  ggplot( aes(y = prcp, x = name)) + 
+  geom_boxplot() 
+```
+
+    ## Warning: Removed 15 rows containing non-finite outside the scale range
+    ## (`stat_boxplot()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+
+# Saving and Embedding plot
+
+``` r
+ggp_weather = 
+  ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) 
+
+ggsave("ggp_weather.pdf", ggp_weather, width = 8, height = 5)
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).

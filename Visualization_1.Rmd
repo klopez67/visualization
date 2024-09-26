@@ -6,6 +6,7 @@ output: github_document
 ---
 ```{r}
 library(tidyverse)
+library(ggridges)
 
 ```
 
@@ -141,4 +142,120 @@ ggplot(aes(x = tmin, y = tmax)) +
 
 
 ```
+
+Using geom_hex shows highest peaks of the data and data density. 
+
+- setting the real color of the plot in geom_point() since there is not a color vairable in the data soo it cant go in the ggplot aes() row
+
+```{r}
+weather_df |>
+  ggplot(aes(x=tmin, y = tmax))+ 
+  geom_hex()
+
+```
+Using geom_hex shows highest peaks of the data and data density. 
+
+- setting the real color of the plot in geom_point() since there is not a color vairable in the data soo it cant go in the ggplot aes() row
+
+```{r}
+weather_df |>
+  ggplot(aes(x=tmin, y = tmax))+ 
+  geom_hex()
+
+```
+
+# Univariable Plots (1 variable)
+
+Use geom_histogram() to make a histogram of only variable tmax
+
+```{r}
+ggplot(weather_df, aes(x = tmax)) + 
+  geom_histogram()
+
+```
+
+Comparison of indiviaul places from the weather data next of each other. 
+
+```{r}
+ggplot(weather_df, aes(x = tmax, fill = name)) + 
+  geom_histogram(position = "dodge", binwidth = 2)
+```
+
+To fix this. Use facet_grid() function seperated by name of location. 
+
+
+```{r}
+weather_df |> 
+  ggplot(aes(x=tmin, fill = name)) + 
+  geom_histogram() + 
+  facet_grid(.~name)
+```
+
+Instead we can also use a density plot like "smooth histogram: 
+- this is the one professor would go for if comparing across locations
+
+```{r}
+
+weather_df |> 
+  ggplot(aes(x = tmin, fill = name)) + 
+  geom_density (alpha = .3)
+```
+
+
+We can also do boxplots
+
+```{r}
+
+weather_df |>
+  ggplot(aes(x=name, y = tmin, fill=name)) + 
+  geom_boxplot()
+```
+
+Violin Plot: 
+
+- used for vertical display of densities 
+- **professor prefers violin plots compared to boxplots when the data is multimodal(shows up as more bumpy) or skewed**
+- looking at distribution across tmin 
+
+```{r}
+
+weather_df |> 
+  ggplot(aes(x=name, y = tmin, fill=name))+ 
+  geom_violin()
+```
+
+Ridge Plots 
+
+- used for separating each densities and separated vertically
+- looks similar to density plot, separating each variable on the y axis
+- must install ggridges
+
+
+```{r}
+weather_df |> 
+  ggplot( aes(x = tmax, y = name)) + 
+  geom_density_ridges()
+```
+
+Make plots that compare precipitation across locations. Try a histogram, a density plot, a boxplot, a violin plot, and a ridgeplot; use aesthetic mappings to make your figure readable
+
+- boxplot is the best since it shows the outliers the best 
+
+```{r}
+weather_df |> 
+  ggplot( aes(y = prcp, x = name)) + 
+  geom_boxplot() 
+```
+
+# Saving and Embedding plot
+
+
+```{r}
+ggp_weather = 
+  ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) 
+
+ggsave("ggp_weather.pdf", ggp_weather, width = 8, height = 5)
+```
+
 
