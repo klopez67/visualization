@@ -37,3 +37,34 @@ weather_df =
 
 ```
 
+# Basic Scatterplot 
+Making Plot 1 using ggplot. 
+
+- ggplot(dfname, aes(x = , y = ))
+- this, alone, is a blank scatter plot becasue we have not stated the geometry yet
+- use geom_point() to put the scatter plot points for this
+
+```{r}
+ ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+You can also do this as part of a collection of other codes like piping 
+
+```{r}
+weather_df |> 
+  ggplot(aes(x=tmin, y =tmax))+ 
+  geom_point()
+
+```
+
+Saving ggplot objects by assigning it to a variable ggp_weather_scatterplot
+
+```{r}
+ggp_weather_scatterplot= 
+  weather_df |> 
+  ggplot(aes(x=tmin, y =tmax))+ 
+  geom_point()
+  
+```
+

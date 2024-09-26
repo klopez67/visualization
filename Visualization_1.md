@@ -63,3 +63,45 @@ weather_df =
     ## date created (size, mb): 2024-09-26 10:19:44.798392 (1.036)
 
     ## file min/max dates: 1999-09-01 / 2024-09-30
+
+# Basic Scatterplot
+
+Making Plot 1 using ggplot.
+
+- ggplot(dfname, aes(x = , y = ))
+- this, alone, is a blank scatter plot becasue we have not stated the
+  geometry yet
+- use geom_point() to put the scatter plot points for this
+
+``` r
+ ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+You can also do this as part of a collection of other codes like piping
+
+``` r
+weather_df |> 
+  ggplot(aes(x=tmin, y =tmax))+ 
+  geom_point()
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_1_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+Saving ggplot objects by assigning it to a variable
+ggp_weather_scatterplot
+
+``` r
+ggp_weather_scatterplot= 
+  weather_df |> 
+  ggplot(aes(x=tmin, y =tmax))+ 
+  geom_point()
+```
