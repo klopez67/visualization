@@ -17,3 +17,49 @@ library(tidyverse)
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
     ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+
+Importing weather data.
+
+- data is publicly avaialble
+- rnoaa is allowing you to extract the data for the weathr stations &
+  selectig data variables from 2021-2022
+- mutating by creating a new variable “name” for case_matching and id
+  and turning time into degrees celcious
+- keeping id and everything else the same
+- use df \|\> view() to view the df
+
+``` r
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = case_match(
+      id, 
+      "USW00094728" ~ "CentralPark_NY", 
+      "USW00022534" ~ "Molokai_HI",
+      "USS0023B17S" ~ "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
+
+    ## using cached file: /Users/kimlopez/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00094728.dly
+
+    ## date created (size, mb): 2024-09-26 10:19:32.377321 (8.651)
+
+    ## file min/max dates: 1869-01-01 / 2024-09-30
+
+    ## using cached file: /Users/kimlopez/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00022534.dly
+
+    ## date created (size, mb): 2024-09-26 10:19:41.659463 (3.932)
+
+    ## file min/max dates: 1949-10-01 / 2024-09-30
+
+    ## using cached file: /Users/kimlopez/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USS0023B17S.dly
+
+    ## date created (size, mb): 2024-09-26 10:19:44.798392 (1.036)
+
+    ## file min/max dates: 1999-09-01 / 2024-09-30
