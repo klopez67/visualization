@@ -83,7 +83,8 @@ Use scale_color_hue to make different color pallets. Dont make your own color pa
 
 
 ```{r}
-weather_df |> 
+ggp_temp_plot= 
+  weather_df |> 
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_point(aes(color = name), alpha = .5) + 
   labs(
@@ -98,4 +99,63 @@ weather_df |>
     discrete = TRUE
   )
 ```
+
+
+# Themes 
+
+These control the overall appearance of the plots you are trying to make which is not specific to aesthtic mapping. Were only changing how the plots look in general. 
+
+- legend.position = "none" will remove the legend. 
+- theme_bw() will set background to white
+- theme_minimal() is like the black and white 
+- theme_classic () gives you the lines of the bars 
+
+- order matters!!!!!
+```{r}
+ggp_temp_plot + 
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+```
+```{r}
+ggp_temp_plot + 
+  theme_classic() + 
+  theme(legend.position = "bottom")
+```
+
+
+Dont USe this:
+```{r}
+ggp_temp_plot + 
+  ggthemes::theme_excel() + 
+  theme(legend.position = "bottom")
+```
+
+ A Good plot example: 
+ 
+Revisit the plot showing tmax against date for each location. Use labels, scale options, and theme changes to improve the readability of this plot
+steps
+- ggplot() 
+- geom_smooth() standard error = false
+- geom_point() to add the points 
+- labs () labeling axis 
+
+
+```{r}
+weather_df|> 
+  ggplot( aes(x = date, y = tmax, color = name)) + 
+  geom_smooth(se = FALSE) + 
+  geom_point(aes(size = prcp), alpha = .75) + 
+  labs(
+    title = "Temperature plot",
+    x = "Date",
+    y = "Seasonal variation in Maxiumum temperature (C)",
+    color = "Location",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(discrete = TRUE) + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+```
+
 

@@ -134,7 +134,8 @@ color pallets ranges instead use set combinations viridis package
   aesthetic used in histograms, density plots, and elsewhere.
 
 ``` r
-weather_df |> 
+ggp_temp_plot= 
+  weather_df |> 
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_point(aes(color = name), alpha = .5) + 
   labs(
@@ -153,7 +154,87 @@ weather_df |>
     ## Scale for colour is already present.
     ## Adding another scale for colour, which will replace the existing scale.
 
+# Themes
+
+These control the overall appearance of the plots you are trying to make
+which is not specific to aesthtic mapping. Were only changing how the
+plots look in general.
+
+- legend.position = “none” will remove the legend.
+
+- theme_bw() will set background to white
+
+- theme_minimal() is like the black and white
+
+- theme_classic () gives you the lines of the bars
+
+- order matters!!!!!
+
+``` r
+ggp_temp_plot + 
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
     ## Warning: Removed 17 rows containing missing values or values outside the scale range
     ## (`geom_point()`).
 
-![](Visualization_2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](Visualization_2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+ggp_temp_plot + 
+  theme_classic() + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+Dont USe this:
+
+``` r
+ggp_temp_plot + 
+  ggthemes::theme_excel() + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+A Good plot example:
+
+Revisit the plot showing tmax against date for each location. Use
+labels, scale options, and theme changes to improve the readability of
+this plot steps - ggplot() - geom_smooth() standard error = false -
+geom_point() to add the points - labs () labeling axis
+
+``` r
+weather_df|> 
+  ggplot( aes(x = date, y = tmax, color = name)) + 
+  geom_smooth(se = FALSE) + 
+  geom_point(aes(size = prcp), alpha = .75) + 
+  labs(
+    title = "Temperature plot",
+    x = "Date",
+    y = "Seasonal variation in Maxiumum temperature (C)",
+    color = "Location",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(discrete = TRUE) + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 19 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
