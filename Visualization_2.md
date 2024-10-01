@@ -419,5 +419,62 @@ pulse_df |>
     ## (`stat_boxplot()`).
 
 <img src="Visualization_2_files/figure-gfm/unnamed-chunk-16-1.png" width="90%" />
+Making FAS plot
+
+- import and clean data
+- both have dose and day of treatment which needs seperating data and
+  combine by pivoting longer pd_ears, eyes, priovt, walk
+
+``` r
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv", na = c("NA", "", "."))|>
+  janitor::clean_names()|>
+  separate(group, into = c("dose", "tx_day"), 3)
+```
+
+    ## Rows: 49 Columns: 8
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (2): Group, Litter Number
+    ## dbl (6): GD0 weight, GD18 weight, GD of Birth, Pups born alive, Pups dead @ ...
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+pups_df = 
+  read_csv("data_import_examples/FAS_pups.csv", na = c("NA", "", "."))|>
+  janitor::clean_names()|>
+  pivot_longer( 
+    pd_ears:pd_walk,
+    names_to= "outcome",
+    values_to = "pn_day",
+    names_prefix = "pd_")
+```
+
+    ## Rows: 313 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): Litter Number
+    ## dbl (5): Sex, PD ears, PD eyes, PD pivot, PD walk
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+fas_df = 
+  left_join (pups_df, litters_df, by= "litter_number")
+
+fas_df |> 
+  drop_na(tx_day)|>
+  ggplot(aes(x= dose, y = pn_day))+ 
+  geom_boxplot()+ 
+  facet_grid(tx_day ~ outcome)
+```
+
+    ## Warning: Removed 42 rows containing non-finite outside the scale range
+    ## (`stat_boxplot()`).
+
+<img src="Visualization_2_files/figure-gfm/unnamed-chunk-17-1.png" width="90%" />
 
 ## Data argument in `geom_*`
