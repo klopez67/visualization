@@ -18,4 +18,142 @@ library(tidyverse)
     ## ✖ dplyr::lag()    masks stats::lag()
     ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
+``` r
+library ( patchwork)
+```
+
 # Visualization 2
+
+We’ll still work with NOAA weather data, which is loaded using the same
+code as in Vis. 1
+
+``` r
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = case_match(
+      id, 
+      "USW00094728" ~ "CentralPark_NY", 
+      "USW00022534" ~ "Molokai_HI",
+      "USS0023B17S" ~ "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
+
+    ## using cached file: /Users/kimlopez/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00094728.dly
+
+    ## date created (size, mb): 2024-09-26 10:19:32.377321 (8.651)
+
+    ## file min/max dates: 1869-01-01 / 2024-09-30
+
+    ## using cached file: /Users/kimlopez/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00022534.dly
+
+    ## date created (size, mb): 2024-09-26 10:19:41.659463 (3.932)
+
+    ## file min/max dates: 1949-10-01 / 2024-09-30
+
+    ## using cached file: /Users/kimlopez/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USS0023B17S.dly
+
+    ## date created (size, mb): 2024-09-26 10:19:44.798392 (1.036)
+
+    ## file min/max dates: 1999-09-01 / 2024-09-30
+
+# Labels
+
+Starting with scatterplot, but use labs function to label axis names
+
+``` r
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    color = "Location",
+    caption = "Weather data from the rnoaa package for three stations"
+  )
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+# Scales
+
+Sometimes the default of ggplot scales this. Use scale_x_continous or
+scale_y_discrete to set breaks = to a number. - you can transform the
+data in the scale\_\* function - you can also set limits in this
+function
+
+``` r
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    color = "Location",
+    caption = "Data from the rnoaa package") + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15), 
+    labels = c("-15º C", "0", "15"),
+     limits = c(-20, 30)) + 
+   scale_y_continuous(
+    trans = "sqrt", 
+    position = "right")
+```
+
+    ## Warning in transformation$transform(x): NaNs produced
+
+    ## Warning in scale_y_continuous(trans = "sqrt", position = "right"): sqrt
+    ## transformation introduced infinite values.
+
+    ## Warning: Removed 142 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+# Color in ggplot
+
+Use scale_color_hue to make different color pallets. Dont make your own
+color pallets ranges instead use set combinations viridis package
+
+- here we ad to tell the scale_color_viridis function that discrete =
+  TRUE.
+- We used discrete = TRUE because the color aesthetic is mapped to a
+  discrete variable.
+- viridis::scale_fill_viridis() function is appropriate for the fill
+  aesthetic used in histograms, density plots, and elsewhere.
+
+``` r
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    color = "Location",
+    caption = "Data from the rnoaa package") + 
+  scale_color_hue(h = c(100, 300))+ 
+  viridis::scale_color_viridis(
+    name = "Location", 
+    discrete = TRUE
+  )
+```
+
+    ## Scale for colour is already present.
+    ## Adding another scale for colour, which will replace the existing scale.
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->

@@ -48,3 +48,54 @@ weather_df |>
 ```
 
 # Scales
+
+Sometimes the default of ggplot scales this. Use scale_x_continous or scale_y_discrete to set breaks = to a number.
+- you can transform the data in the scale_* function
+- you can also set limits in this function 
+
+```{r}
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    color = "Location",
+    caption = "Data from the rnoaa package") + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15), 
+    labels = c("-15º C", "0", "15"),
+     limits = c(-20, 30)) + 
+   scale_y_continuous(
+    trans = "sqrt", 
+    position = "right")
+  
+```
+
+# Color in ggplot
+
+Use scale_color_hue to make different color pallets. Dont make your own color pallets ranges instead use set combinations viridis package 
+
+- here we ad to tell the scale_color_viridis function that discrete = TRUE. 
+- We used discrete = TRUE because the color aesthetic is mapped to a discrete variable.
+- viridis::scale_fill_viridis() function is appropriate for the fill aesthetic used in histograms, density plots, and elsewhere.
+
+
+```{r}
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    color = "Location",
+    caption = "Data from the rnoaa package") + 
+  scale_color_hue(h = c(100, 300))+ 
+  viridis::scale_color_viridis(
+    name = "Location", 
+    discrete = TRUE
+  )
+```
+
