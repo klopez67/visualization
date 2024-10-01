@@ -20,6 +20,7 @@ library(tidyverse)
 
 ``` r
 library ( patchwork)
+library(haven)
 ```
 
 # Visualization 2
@@ -209,8 +210,12 @@ A Good plot example:
 
 Revisit the plot showing tmax against date for each location. Use
 labels, scale options, and theme changes to improve the readability of
-this plot steps - ggplot() - geom_smooth() standard error = false -
-geom_point() to add the points - labs () labeling axis
+this plot.Steps
+
+- ggplot()
+- geom_smooth() standard error = false
+- geom_point() to add the points
+- labs () labeling axis
 
 ``` r
 weather_df|> 
@@ -351,5 +356,68 @@ scale_fill_discrete = scale_fill_viridis_d
 ```
 
 ## Data Manipulation
+
+if the data is not naturally ordered, factor variables could be used.
+This lables somethign as first second and third.
+
+``` r
+weather_df |> 
+  ggplot(aes(x=name, y=tmax, fill=name))+ 
+  geom_violin(alpha= .5)
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_ydensity()`).
+
+<img src="Visualization_2_files/figure-gfm/unnamed-chunk-14-1.png" width="90%" />
+
+To change the factor variables, you would need to manipute the dataset.
+
+- use fct_relevel(variable) to reorder them
+
+``` r
+weather_df |> 
+  mutate(
+    name= fct_relevel(name, c("Molokai_HI", "CentralPark_NY", "Waterhole_WA")))|>
+  ggplot(aes(x=name, y=tmax, fill=name))+ 
+  geom_violin(alpha= .5)
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_ydensity()`).
+
+<img src="Visualization_2_files/figure-gfm/unnamed-chunk-15-1.png" width="90%" />
+
+Pulse dataset next:
+
+- importing data first
+- creating a plot that shows changes in bdi score over vists
+- this *requires initial data manipulation or data tidyness to have
+  visits in one column!!! *
+  - pivot wide to long
+  - also need to reorder since default puts “bl” after numbers in
+    alphabetical order
+  - mutate
+
+``` r
+pulse_df= 
+  read_sas("data_import_examples/public_pulse_data.sas7bdat")|>
+  janitor::clean_names() |> 
+  pivot_longer( 
+    cols= bdi_score_bl: bdi_score_12m, 
+    names_to= "visit",
+    values_to = "bdi_score",
+    names_prefix= "bdi_score_")|>
+  mutate(visit= ifelse(visit== "bl", "00m", visit))
+
+pulse_df |>
+  ggplot(aes(x=visit, y = bdi_score))+ 
+  geom_boxplot()
+```
+
+    ## Warning: Removed 879 rows containing non-finite outside the scale range
+    ## (`stat_boxplot()`).
+
+<img src="Visualization_2_files/figure-gfm/unnamed-chunk-16-1.png" width="90%" />
 
 ## Data argument in `geom_*`
