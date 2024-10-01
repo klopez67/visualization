@@ -222,7 +222,8 @@ weather_df|>
     x = "Date",
     y = "Seasonal variation in Maxiumum temperature (C)",
     color = "Location",
-    caption = "Data from the rnoaa package"
+    caption = "Data from the rnoaa package", 
+    size= "Precipitation"
   ) + 
   viridis::scale_color_viridis(discrete = TRUE) + 
   theme_minimal() + 
@@ -238,3 +239,117 @@ weather_df|>
     ## (`geom_point()`).
 
 ![](Visualization_2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+# Extra Bonus stuff in `ggplot`
+
+Use different datasets in different `geom`s
+
+Creating dataframes from locations central park, molokai. You dont
+always have to put two dataframes in the same dataset to plot an
+overlapping plot!!!
+
+``` r
+central_park_df = 
+  weather_df |> 
+  filter(name =="CentralPark_NY")
+
+molokai_df = 
+  weather_df |> 
+  filter(name == "Molokai_HI")
+
+molokai_df |> 
+  ggplot(aes(x= date, y = tmax, color = name)) + 
+  geom_point () + 
+  geom_line(data = central_park_df)
+```
+
+    ## Warning: Removed 1 row containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \##
+Mulitple Panels
+
+``` r
+weather_df |> 
+  ggplot(aes(x=tmax, fill = name))+ 
+  geom_density() + 
+  facet_grid(.~name)
+```
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_density()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+Patching two seperate plots together when there are different plot
+types.
+
+- either paste two together: ggp_tmax_tmin + ggp_tmax_density OR
+
+- put two plots together and one plot at the bottom: (ggp_tmax_tmin +
+  ggp_tmax_density)/ ggp_tmax_date
+
+``` r
+ggp_tmax_tmin = 
+  weather_df |> 
+  ggplot(aes(x= tmin, y= tmax, color= name))+ 
+  geom_point(alpha = .3) 
+
+ggp_tmax_density = 
+  weather_df |> 
+  ggplot(aes(x= tmax, color= name))+ 
+  geom_density(alpha = .3) 
+
+ggp_tmax_date = 
+  weather_df |> 
+  ggplot(aes(x= date, y=tmax, color= name))+ 
+  geom_point() + 
+  geom_smooth(se=FALSE)
+
+(ggp_tmax_tmin + ggp_tmax_density)/ ggp_tmax_date
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_density()`).
+
+    ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](Visualization_2_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+# Setting options
+
+set options to default. Use this at the beginning of the documents if
+you want to set these preferences.
+
+``` r
+library(tidyverse)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Data Manipulation
+
+## Data argument in `geom_*`
