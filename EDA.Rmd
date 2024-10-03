@@ -1,0 +1,233 @@
+---
+title: "EDA"
+author: "Kimberly Lopez"
+date: "2024-10-03"
+output: github_document
+---
+
+
+```{r}
+library(tidyverse)
+library ( patchwork)
+library(haven)
+```
+
+Importing weather data
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = case_match(
+      id, 
+      "USW00094728" ~ "CentralPark_NY", 
+      "USW00022534" ~ "Molokai_HI",
+      "USS0023B17S" ~ "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10,
+    month = lubridate::floor_date(date, unit = "month")) |>
+  select(name, id, everything())
+
+```
+
+## Initial numeric explorations
+Before beginning to summarize data, it can help to use initial visualizations to motivate some data checks or observations. Consider, for example, this histogram of precipitation values:
+```{r}
+weather_df |> 
+  ggplot(aes(x = prcp)) + 
+  geom_histogram()
+```
+
+When was precipitation more than 1000
+
+```{r}
+weather_df|> 
+  filter(prcp>1000)
+```
+
+A close look at the scatterplot below (which focuses on a range of values to emphasize this point) suggests that Central Park and Molokai report temperature values differently from Waterhole …
+```{r}
+weather_df |> 
+  filter(tmax >= 20, tmax <= 30) |> 
+  ggplot(aes(x = tmin, y = tmax, color = name, shape = name)) + 
+  geom_point(alpha = .75)
+```
+--> there looks like Central Park and Molokai has bands. This could be due to the way the data is being reported. One might be reporting in fareheight and other in degrees.
+
+
+##   group_by
+
+Grouping weather data by name and month. This is different than mutating. 
+
+- you can group by mutliple things
+
+```{r}
+weather_df|> 
+  group_by(name,month)
+```
+We can use this to count stuff by using group and summarize. 
+
+- we can find distinct observations by adding a seperate variable that takes dictint(month). 
+```{r}
+weather_df|> 
+  group_by(name)|> 
+  summarize(
+    n_obs = n(), 
+    n_dist = n_distinct(month))
+
+```
+# 2x2 table 
+
+```{r}
+weather_df |> 
+  drop_na(tmax) |> 
+  mutate(
+    cold = case_when(
+      tmax <  5 ~ "cold",
+      tmax >= 5 ~ "not_cold",
+      TRUE      ~ ""
+  )) |> 
+  filter(name != "Molokai_HI") |> 
+  group_by(name, cold) |> 
+  summarize(count = n())
+```
+We can turn this into a normal 2x2 table 
+```{r}
+weather_df |> 
+  drop_na(tmax) |> 
+  mutate(cold = case_when(
+    tmax <  5 ~ "cold",
+    tmax >= 5 ~ "not_cold",
+    TRUE     ~ ""
+  )) |> 
+  filter(name != "Molokai_HI") |> 
+  janitor::tabyl(name, cold)
+```
+
+## Generic numeric summaries 
+
+We can compute other general summary statistics like:
+
+- after grouping by month, we are looking at all of these summaries for each month (3 stations for 24 months is 72 rows)
+- summarize(), mean(), median(), var(), sd(), mad(), IQR(), min(), and max()
+- use na.rm = TRUE if we have missing data
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    mean_prec = mean(prcp, na.rm = TRUE),
+    median_tmax = median(tmax),
+    sd_tmax = sd(tmax))
+```
+This is still tidyverse stuff like a tibble. 
+
+Summarize and then plot this using ggplot since its a tibble. 
+
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    mean_prec = mean(prcp, na.rm = TRUE),
+    median_tmax = median(tmax),
+    sd_tmax = sd(tmax)) |> 
+  ggplot(aes(x = month, y = mean_tmax, color = name)) + 
+    geom_point() + geom_line() + 
+    theme(legend.position = "bottom")
+```
+
+We can reformat this for it to be reader friendly. This time we only focus on mean(tmax). 
+
+- sometimes this means making less tidy data (pivoting wider) to show whats going on in each
+- still use knitr kable keeping only 3 digits
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |> 
+  pivot_wider(
+    names_from = name,
+    values_from = mean_tmax) |> 
+  knitr::kable(digits = 3, 
+               col.names = c("Month", "Central Park", "Molokai", "Waterhole"))
+```
+
+## Grouped Mutates
+
+This groups by name first and then mutate the variable that takes the mean of variable tmax and saved it to the new variable mean_tmax. 
+
+- ** do not group_by() permanantly**
+- we can also calc center by tmax- mean_tmax
+- mutate is part of window functions which if u coonduct a whole function on a column it will return a column with the same amount of inputs the colomun had in it.
+
+```{r}
+weather_df |>
+  group_by(name) |>
+  mutate(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    centered_tmax = tmax - mean_tmax)
+```
+Adding a ggplot to it 
+```{r}
+weather_df |>
+  group_by(name) |>
+  mutate(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    centered_tmax = tmax - mean_tmax) |> 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) + 
+    geom_point() 
+```
+
+Find Hottest or coldest days. 
+
+- coldest. 
+- we can use min_rank() or desc()
+```{r}
+weather_df |> 
+  group_by(name)|>
+  mutate(
+    temp_rank = min_rank(desc(tmax))
+  )|> 
+  filter(temp_rank<4)
+```
+- we can also skip mutate() section and we can create the ranks and filter all in one shot. 
+```{r}
+weather_df|> 
+  group_by(name)|>
+  filter(min_rank(tmax) <4) |>
+  arrange(tmax)
+```
+
+We can use the Lad function used to compare an observation to it’s previous value. 
+
+- useful, for example, to find the day-by-day change in max temperature within each station over the year
+```{r}
+weather_df |>
+  group_by(name) |>
+  mutate(temp_change = tmax - lag(tmax))
+```
+DATA MUST BE IN ORDER, if we have missing dates we need to account for that. 
+This gives us day to day variations and fluctuations. 
+
+- group_by(name)
+- mutate to create 
+```{r}
+weather_df |> 
+  group_by(name)|>
+  mutate (
+    lagged_tmax = lag(tmax),
+    temp_change = tmax - lagged_tmax)|>
+  summarize ( 
+    sd_tmax_change = sd(temp_change, na.rm=TRUE))
+```
+
+## Revisiting Past Data
+
+Use pulse dataframe, compute mean and median bdi_score for each visit in a reader friendly format. 
+Import 
+
+
+
